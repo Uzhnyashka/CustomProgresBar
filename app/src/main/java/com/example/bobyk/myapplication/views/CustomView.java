@@ -57,17 +57,43 @@ public class CustomView extends View {
 
         int pos1X, pos1Y, pos2X, pos2Y, pos3X, pos3Y, pos4X, pos4Y;
 
+        int diff = Math.abs(height - width) / 2;
 
         if (height >= width){
-            int diff = (height - width) / 2;
-            canvas.drawCircle(littleRadius, littleRadius + diff, littleRadius, paint);
-            canvas.drawCircle(width - littleRadius, littleRadius + diff, littleRadius, paint);
-            canvas.drawCircle(littleRadius, height - littleRadius - diff, littleRadius, paint);
-            canvas.drawCircle(width - littleRadius, height - littleRadius - diff, littleRadius, paint);
 
+            pos1X = littleRadius;
+            pos1Y = littleRadius + diff;
 
-            canvas.drawCircle(width / 2, height / 2, bigRadius, paint);
+            pos2X = width - littleRadius;
+            pos2Y = littleRadius + diff;
+
+            pos3X = littleRadius;
+            pos3Y = height - littleRadius - diff;
+
+            pos4X = width - littleRadius;
+            pos4Y = height - littleRadius - diff;
         }
+        else {
+            pos1X = littleRadius + diff;
+            pos1Y = littleRadius;
+
+            pos2X = width - littleRadius - diff;
+            pos2Y = littleRadius;
+
+            pos3X = littleRadius + diff;
+            pos3Y = height - littleRadius;
+
+            pos4X = width - littleRadius - diff;
+            pos4Y = height - littleRadius;
+        }
+
+        canvas.drawCircle(pos1X, pos1Y, littleRadius, paint);
+        canvas.drawCircle(pos2X, pos2Y, littleRadius, paint);
+        canvas.drawCircle(pos3X, pos3Y, littleRadius, paint);
+        canvas.drawCircle(pos4X, pos4Y, littleRadius, paint);
+
+
+        canvas.drawCircle(width / 2, height / 2, bigRadius, paint);
     }
 
     @Override

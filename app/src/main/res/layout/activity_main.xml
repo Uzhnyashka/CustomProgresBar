@@ -6,8 +6,16 @@
     android:layout_height="match_parent">
 
     <com.example.bobyk.myapplication.views.CustomView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:circlecolor="@color/blackColor" />
+    <com.example.bobyk.myapplication.views.CustomView
+        android:layout_width="100dp"
+        android:layout_height="200dp"
+        app:circlecolor="@color/blackColor" />
+    <com.example.bobyk.myapplication.views.CustomView
+        android:layout_width="200dp"
+        android:layout_height="100dp"
         app:circlecolor="@color/blackColor" />
 
 </LinearLayout>
