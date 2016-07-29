@@ -8,7 +8,6 @@
     <com.example.bobyk.myapplication.views.CustomView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:circlecolor="@color/blackColor"
-        app:radius="30"/>
+        app:circlecolor="@color/blackColor" />
 
 </LinearLayout>
