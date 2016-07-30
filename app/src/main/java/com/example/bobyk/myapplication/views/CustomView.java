@@ -1,15 +1,24 @@
 package com.example.bobyk.myapplication.views;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.example.bobyk.myapplication.Point;
 import com.example.bobyk.myapplication.R;
+
+import java.util.ArrayList;
 
 /**
  * Created by bobyk on 29.07.16.
@@ -20,6 +29,10 @@ public class CustomView extends View {
     int height = 0;
     int width = 0;
     private Paint paint = new Paint();
+    private ValueAnimator moveAnimator;
+    private ObjectAnimator anim;
+    private Bitmap bitmapIcon;
+    private ArrayList<Point> points;
 
     public CustomView(Context context){
         super(context);
@@ -37,14 +50,28 @@ public class CustomView extends View {
     }
 
     private void init(Context context, AttributeSet attrs){
-        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.CustomView, 0, 0);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomView);
 
         try {
-            color = a.getColor(R.styleable.CustomView_circlecolor, 0xff000000);
+            color = a.getColor(R.styleable.CustomView_barColor, 0xff000000);
+            Drawable icon = a.getDrawable(R.styleable.CustomView_barIcon);
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) icon;
+            if (bitmapDrawable != null) {
+                bitmapIcon = bitmapDrawable.getBitmap();
+            }
+            else {
+                bitmapIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            }
         }finally {
             a.recycle();
         }
         paint.setColor(color);
+        initAnimation();
+    }
+
+    private void initAnimation(){
+        moveAnimator = ValueAnimator.ofInt(0, 1337);
+
     }
 
 
@@ -55,52 +82,44 @@ public class CustomView extends View {
         int littleRadius = Math.min(height, width) / 20;
         int bigRadius = Math.min(height, width) / 6;
 
-        int pos1X, pos1Y, pos2X, pos2Y, pos3X, pos3Y, pos4X, pos4Y;
-
-        int diff = Math.abs(height - width) / 2;
-
-        if (height >= width){
-
-            pos1X = littleRadius;
-            pos1Y = littleRadius + diff;
-
-            pos2X = width - littleRadius;
-            pos2Y = littleRadius + diff;
-
-            pos3X = littleRadius;
-            pos3Y = height - littleRadius - diff;
-
-            pos4X = width - littleRadius;
-            pos4Y = height - littleRadius - diff;
-        }
-        else {
-            pos1X = littleRadius + diff;
-            pos1Y = littleRadius;
-
-            pos2X = width - littleRadius - diff;
-            pos2Y = littleRadius;
-
-            pos3X = littleRadius + diff;
-            pos3Y = height - littleRadius;
-
-            pos4X = width - littleRadius - diff;
-            pos4Y = height - littleRadius;
+        Bitmap littleBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, littleRadius * 2, littleRadius * 2
+                , false);
+        Bitmap bigBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, bigRadius * 2, bigRadius * 2, false);
+        for (Point point : points){
+            canvas.drawBitmap(littleBitmapIcon, point.getPosX() - littleBitmapIcon.getWidth() / 2, point.getPosY() - littleBitmapIcon.getHeight() / 2, paint);
         }
 
-        canvas.drawCircle(pos1X, pos1Y, littleRadius, paint);
-        canvas.drawCircle(pos2X, pos2Y, littleRadius, paint);
-        canvas.drawCircle(pos3X, pos3Y, littleRadius, paint);
-        canvas.drawCircle(pos4X, pos4Y, littleRadius, paint);
-
-
-        canvas.drawCircle(width / 2, height / 2, bigRadius, paint);
+        canvas.drawBitmap(bigBitmapIcon, width / 2 - bigBitmapIcon.getWidth() / 2, height / 2 - bigBitmapIcon.getHeight() / 2, paint);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        height = getMeasuredHeight();
-        width = getMeasuredWidth();
-        System.out.println("Width: " + getMeasuredWidth()  + "  Height: " + getMeasuredHeight());
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        points = new ArrayList<>();
+        height = h;
+        width = w;
+
+        int littleRadius = Math.min(height, width) / 20;
+
+        int diff = Math.abs(height - width) / 2;
+
+        if (height >= width){
+            points.add(new Point(littleRadius, littleRadius + diff));
+            points.add(new Point(width - littleRadius, littleRadius + diff));
+            points.add(new Point(littleRadius, height - littleRadius - diff));
+            points.add(new Point(width - littleRadius, height - littleRadius - diff));
+        }
+        else {
+            points.add(new Point(littleRadius + diff, littleRadius));
+            points.add(new Point(width - littleRadius - diff, littleRadius));
+            points.add(new Point(littleRadius + diff, height - littleRadius));
+            points.add(new Point(width - littleRadius - diff, height - littleRadius));
+        }
+
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="CustomView">
-        <attr name="radius" format="integer"/>
-        <attr name="circlecolor" format="color"/>
+        <attr name="barColor" format="color"/>
+        <attr name="barIcon" format="integer"/>
     </declare-styleable>
 </resources>
