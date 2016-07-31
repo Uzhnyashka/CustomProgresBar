@@ -9,7 +9,7 @@
     <com.example.bobyk.myapplication.views.CustomView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:barColor="@color/blackColor"
+        app:barColor="@color/colorAccent"
         app:barIcon="@drawable/tomato"/>
  <!--   <com.example.bobyk.myapplication.views.CustomView
         android:layout_width="100dp"
