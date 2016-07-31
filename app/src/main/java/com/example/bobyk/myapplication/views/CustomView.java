@@ -105,6 +105,7 @@ public class CustomView extends View {
             }
         });
 
+
         AnimatorSet topLeftToCenter = moveTopLeftToCenter();
         AnimatorSet botLeftToCenter = moveBotLeftToCenter();
         botLeftToCenter.setStartDelay(200);
@@ -114,7 +115,7 @@ public class CustomView extends View {
         topRightToCenter.setStartDelay(600);
 
         AnimatorSet moveToCenterAnimator = new AnimatorSet();
-        moveToCenterAnimator.playTogether(topLeftToCenter/*, botLeftToCenter, botRightToCenter, topRightToCenter*/);
+        moveToCenterAnimator.playTogether(topLeftToCenter, botLeftToCenter, botRightToCenter, topRightToCenter);
 
         AnimatorSet topLeftFromCenter = moveTopLeftFromCenter();
         AnimatorSet botLeftFromCenter = moveBotLeftFromCenter();
@@ -125,81 +126,103 @@ public class CustomView extends View {
         topRightFromCenter.setStartDelay(600);
 
         AnimatorSet moveFromCenterAnimator = new AnimatorSet();
-        moveFromCenterAnimator.playTogether(topLeftFromCenter/*, botLeftFromCenter, botRightFromCenter, topRightFromCenter*/);
+        moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
 
         final AnimatorSet mainAnimator = new AnimatorSet();
-        mainAnimator.playSequentially(bigAlphaAnimator, moveToCenterAnimator, littleAlphaAnimator);
-       /* mainAnimator.addListener(new AnimatorListenerAdapter() {
+        mainAnimator.playSequentially(bigAlphaAnimator, moveToCenterAnimator, littleAlphaAnimator, moveFromCenterAnimator);
+        mainAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 mainAnimator.start();
             }
-        });*/
+        });
         mainAnimator.start();
     }
 
     private ValueAnimator moveDown(final int i){
-        final int y = points.get(i).getPosY();
-        System.out.println("y : " + y);
         ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
         moveDownAnimator.setDuration(500);
         moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                points.get(i).setPosY(y + (int)valueAnimator.getAnimatedValue());
+                int y = CustomView.this.points.get(i).getStartPosY();
+                CustomView.this.points.get(i).setPosY(y + (int)valueAnimator.getAnimatedValue());
                 CustomView.this.invalidate();
+            }
+        });
+        moveDownAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                CustomView.this.points.get(i).setStartPosY(CustomView.this.points.get(i).getStartPosY() + (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
             }
         });
         return moveDownAnimator;
     }
 
     private ValueAnimator moveUp(final int i){
-        final int y = points.get(i).getPosY();
-        System.out.println("y : " + y);
-        ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
-        moveDownAnimator.setDuration(500);
-        moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
+        moveUpAnimator.setDuration(500);
+        moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                points.get(i).setPosY(y - (int)valueAnimator.getAnimatedValue());
+                int y = CustomView.this.points.get(i).getStartPosY();
+                CustomView.this.points.get(i).setPosY(y - (int)valueAnimator.getAnimatedValue());
                 CustomView.this.invalidate();
             }
         });
-        return moveDownAnimator;
+        moveUpAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                CustomView.this.points.get(i).setStartPosY(CustomView.this.points.get(i).getStartPosY() - (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
+            }
+        });
+        return moveUpAnimator;
     }
 
     private ValueAnimator moveRight(final int i){
-        final int x = points.get(i).getPosX();
-        System.out.println("x : " + x);
         ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
         moveRightAnimator.setDuration(500);
         moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                points.get(i).setPosX((x + (int)valueAnimator.getAnimatedValue()));
+                int x = CustomView.this.points.get(i).getStartPosX();
+                CustomView.this.points.get(i).setPosX((x + (int)valueAnimator.getAnimatedValue()));
                 CustomView.this.invalidate();
+            }
+        });
+        moveRightAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                CustomView.this.points.get(i).setStartPosX(CustomView.this.points.get(i).getStartPosX() + (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
             }
         });
         return moveRightAnimator;
     }
 
     private ValueAnimator moveLeft(final int i){
-        final int x = points.get(i).getPosX();
-        System.out.println("x : " + x);
-        ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
-        moveRightAnimator.setDuration(500);
-        moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
+        moveLeftAnimator.setDuration(500);
+        moveLeftAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                points.get(i).setPosX((x - (int)valueAnimator.getAnimatedValue()));
+                int x = CustomView.this.points.get(i).getStartPosX();
+                CustomView.this.points.get(i).setPosX((x - (int)valueAnimator.getAnimatedValue()));
                 CustomView.this.invalidate();
             }
         });
-        return moveRightAnimator;
+
+        moveLeftAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                CustomView.this.points.get(i).setStartPosX(CustomView.this.points.get(i).getStartPosX() - (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
+            }
+        });
+        return moveLeftAnimator;
     }
 
     private AnimatorSet moveTopLeftToCenter(){
+        System.out.println("x: " + points.get(0).getPosX() + " y: " + points.get(0). getPosY());
         ValueAnimator moveDownAnimator = moveDown(0);
         ValueAnimator moveRightAnimator = moveRight(0);
         moveRightAnimator.setStartDelay(50);
@@ -251,21 +274,21 @@ public class CustomView extends View {
 
     private AnimatorSet moveBotLeftFromCenter(){
         ValueAnimator moveDownAnimator = moveDown(2);
-        ValueAnimator moveRightAnimator = moveRight(2);
-        moveDownAnimator.setStartDelay(50);
+        ValueAnimator moveLeftAnimator = moveLeft(2);
+        moveLeftAnimator.setStartDelay(50);
 
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playSequentially(moveRightAnimator, moveDownAnimator);
+        animatorSet.playSequentially(moveDownAnimator, moveLeftAnimator);
         return animatorSet;
     }
 
     private AnimatorSet moveBotRightFromCenter(){
-        ValueAnimator moveLeft = moveLeft(3);
+        ValueAnimator moveRight = moveRight(3);
         ValueAnimator moveDown = moveDown(3);
-        moveLeft.setStartDelay(50);
+        moveDown.setStartDelay(50);
 
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playSequentially(moveDown, moveLeft);
+        animatorSet.playSequentially(moveRight, moveDown);
         return animatorSet;
     }
 
@@ -278,6 +301,7 @@ public class CustomView extends View {
         animatorSet.playSequentially(moveUpAnimator, moveRightAnimator);
         return animatorSet;
     }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -315,16 +339,16 @@ public class CustomView extends View {
         int diff = Math.abs(height - width) / 2;
 
         if (height >= width){
-            points.add(new Point(littleRadius, littleRadius + diff));
-            points.add(new Point(width - littleRadius, littleRadius + diff));
-            points.add(new Point(littleRadius, height - littleRadius - diff));
-            points.add(new Point(width - littleRadius, height - littleRadius - diff));
+            points.add(new Point(littleRadius, littleRadius + diff, littleRadius, littleRadius + diff));
+            points.add(new Point(width - littleRadius, littleRadius + diff, width - littleRadius, littleRadius + diff));
+            points.add(new Point(littleRadius, height - littleRadius - diff, littleRadius, height - littleRadius - diff));
+            points.add(new Point(width - littleRadius, height - littleRadius - diff, width - littleRadius, height - littleRadius - diff));
         }
         else {
-            points.add(new Point(littleRadius + diff, littleRadius));
-            points.add(new Point(width - littleRadius - diff, littleRadius));
-            points.add(new Point(littleRadius + diff, height - littleRadius));
-            points.add(new Point(width - littleRadius - diff, height - littleRadius));
+            points.add(new Point(littleRadius + diff, littleRadius, littleRadius + diff, littleRadius));
+            points.add(new Point(width - littleRadius - diff, littleRadius, width - littleRadius - diff, littleRadius));
+            points.add(new Point(littleRadius + diff, height - littleRadius, littleRadius + diff, height - littleRadius));
+            points.add(new Point(width - littleRadius - diff, height - littleRadius, width - littleRadius - diff, height - littleRadius));
         }
 
         littleBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, littleRadius * 2, littleRadius * 2
