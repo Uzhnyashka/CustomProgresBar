@@ -26,13 +26,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init(){
-        progressCircleBar = (CustomProgressBar) findViewById(R.id.circle);
+        /*progressCircleBar = (CustomProgressBar) findViewById(R.id.circle);
         progressCircleBar.setOnCustomBarClickListener(new CustomProgressBar.OnCustomBarClickListener() {
             @Override
             public void onClick() {
                 Toast.makeText(MainActivity.this, "Click on circle bar", Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
         progressTomatoBar = (CustomProgressBar) findViewById(R.id.tomato);
         progressTomatoBar.setOnCustomBarClickListener(new CustomProgressBar.OnCustomBarClickListener() {

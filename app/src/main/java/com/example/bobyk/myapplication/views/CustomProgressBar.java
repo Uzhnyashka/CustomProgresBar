@@ -3,6 +3,7 @@ package com.example.bobyk.myapplication.views;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -13,11 +14,11 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.bobyk.myapplication.models.Point;
 import com.example.bobyk.myapplication.R;
 
 import java.util.ArrayList;
@@ -133,6 +134,8 @@ public class CustomProgressBar extends View {
             }
         });
 
+        ObjectAnimator x = ObjectAnimator.ofInt(largePaint, "alpha", 0, 255);
+        x.setDuration(1000);
         System.out.println(largeIconAlpha.getDuration());
 
         smallIconAlpha = ValueAnimator.ofInt(255, 0);
@@ -191,6 +194,7 @@ public class CustomProgressBar extends View {
     }
 
     private ValueAnimator moveUp(final int i){
+
         ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallBitmapIcon.getHeight() / 2);
         moveUpAnimator.setDuration(duration / 4 / 3);
         moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -331,7 +335,7 @@ public class CustomProgressBar extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        //Log.d("DRAWTAG", "onDraw: ");
         for (int i = 0; i < points.size() - 1; i++){
             for (int j = i + 1; j < points.size(); j++){
                 Point p1 = points.get(i);
@@ -350,11 +354,20 @@ public class CustomProgressBar extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        final int height = getMeasuredHeight();
+        final int width = getMeasuredWidth();
+
+        int squareSize = Math.min(height, width);
+        setMeasuredDimension(squareSize, squareSize);
+
+        setMinimumHeight(100);
+        setMinimumWidth(100);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
+       // Log.d("TAG", "onSizeChanged: w: " + w + " h: " + h + "old w : " + oldw + "old h : " + oldh);
         points = new ArrayList<>();
         height = h;
         width = w;
@@ -362,20 +375,10 @@ public class CustomProgressBar extends View {
         int littleRadius = Math.min(height, width) / 16;
         int bigRadius = Math.min(height, width) / 4;
 
-        int diff = Math.abs(height - width) / 2;
-
-        if (height >= width){
-            points.add(new Point(littleRadius, littleRadius + diff, littleRadius, littleRadius + diff));
-            points.add(new Point(width - littleRadius, littleRadius + diff, width - littleRadius, littleRadius + diff));
-            points.add(new Point(littleRadius, height - littleRadius - diff, littleRadius, height - littleRadius - diff));
-            points.add(new Point(width - littleRadius, height - littleRadius - diff, width - littleRadius, height - littleRadius - diff));
-        }
-        else {
-            points.add(new Point(littleRadius + diff, littleRadius, littleRadius + diff, littleRadius));
-            points.add(new Point(width - littleRadius - diff, littleRadius, width - littleRadius - diff, littleRadius));
-            points.add(new Point(littleRadius + diff, height - littleRadius, littleRadius + diff, height - littleRadius));
-            points.add(new Point(width - littleRadius - diff, height - littleRadius, width - littleRadius - diff, height - littleRadius));
-        }
+        points.add(new Point(littleRadius, littleRadius, littleRadius, littleRadius));
+        points.add(new Point(width - littleRadius, littleRadius, width - littleRadius, littleRadius));
+        points.add(new Point(littleRadius, height - littleRadius, littleRadius, height - littleRadius));
+        points.add(new Point(width - littleRadius, height - littleRadius, width - littleRadius, height - littleRadius));
 
         smallBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, littleRadius * 2, littleRadius * 2
                 , false);
@@ -395,6 +398,11 @@ public class CustomProgressBar extends View {
             }
         });
         mainAnimator.start();
+    }
+
+    @Override
+    public void setMinimumHeight(int minHeight) {
+        super.setMinimumHeight(minHeight);
     }
 
     public interface OnCustomBarClickListener{
@@ -420,4 +428,51 @@ public class CustomProgressBar extends View {
     public void setOnCustomBarAnimationListener(OnCustomBarAnimationListener onCustomBarAnimationListener) {
         this.onCustomBarAnimationListener = onCustomBarAnimationListener;
     }
+
+    public class Point {
+        private int posX;
+        private int posY;
+        private int startPosX;
+        private int startPosY;
+
+        public Point(int posX, int posY, int startPosX, int startPosY){
+            this.posX = posX;
+            this.posY = posY;
+            this.startPosX = startPosX;
+            this.startPosY = startPosY;
+        }
+
+        public int getPosX() {
+            return posX;
+        }
+
+        public int getPosY() {
+            return posY;
+        }
+
+        public int getStartPosX() {
+            return startPosX;
+        }
+
+        public int getStartPosY() {
+            return startPosY;
+        }
+
+        public void setPosX(int posX) {
+            this.posX = posX;
+        }
+
+        public void setPosY(int posY) {
+            this.posY = posY;
+        }
+
+        public void setStartPosX(int startPosX) {
+            this.startPosX = startPosX;
+        }
+
+        public void setStartPosY(int startPosY) {
+            this.startPosY = startPosY;
+        }
+    }
+
 }
