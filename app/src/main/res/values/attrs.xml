@@ -3,5 +3,6 @@
     <declare-styleable name="CustomView">
         <attr name="barColor" format="color"/>
         <attr name="barIcon" format="integer"/>
+        <attr name="barDuration" format="integer"/>
     </declare-styleable>
 </resources>

@@ -16,7 +16,9 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import com.example.bobyk.myapplication.Point;
 import com.example.bobyk.myapplication.R;
@@ -31,12 +33,13 @@ public class CustomView extends View {
     private int color;
     int height = 0;
     int width = 0;
-    private Paint paint = new Paint();
     private Paint bigPaint = new Paint();
     private Paint paintLine = new Paint();
     private Paint littlePaint = new Paint();
     private ValueAnimator bigAlphaAnimator;
     private ValueAnimator littleAlphaAnimator;
+    private long duration;
+    private long timeDuration;
     private Bitmap bitmapIcon;
     private ArrayList<Point> points;
     private Bitmap littleBitmapIcon;
@@ -62,6 +65,7 @@ public class CustomView extends View {
 
         try {
             color = a.getColor(R.styleable.CustomView_barColor, 0xff000000);
+            duration = a.getInt(R.styleable.CustomView_barDuration, 5000);
             Drawable icon = a.getDrawable(R.styleable.CustomView_barIcon);
             BitmapDrawable bitmapDrawable = (BitmapDrawable) icon;
             if (bitmapDrawable != null) {
@@ -76,14 +80,22 @@ public class CustomView extends View {
         bigPaint.setAlpha(0);
         littlePaint.setAlpha(255);
         paintLine.setColor(color);
-        paintLine.setStrokeWidth(4);
+        paintLine.setStrokeWidth(2);
+
+        CustomView.this.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                Toast.makeText(getContext(), "Current duration " + duration + "ms", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
     }
 
     private void initAnimation(){
         bigAlphaAnimator = ValueAnimator.ofInt(0, 255);
         bigAlphaAnimator.setRepeatMode(ValueAnimator.REVERSE);
         bigAlphaAnimator.setRepeatCount(5);
-        bigAlphaAnimator.setDuration(300);
+        bigAlphaAnimator.setDuration(duration / 4 / 5);
         bigAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -92,11 +104,10 @@ public class CustomView extends View {
             }
         });
 
-        littleAlphaAnimator = ValueAnimator.ofInt(0, 255);
+        littleAlphaAnimator = ValueAnimator.ofInt(255, 0);
         littleAlphaAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        littleAlphaAnimator.setRepeatCount(6);
-        littleAlphaAnimator.setDuration(300);
-        littleAlphaAnimator.setStartDelay(300);
+        littleAlphaAnimator.setRepeatCount(7);
+        littleAlphaAnimator.setDuration(duration / 4 / 7);
         littleAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -108,22 +119,22 @@ public class CustomView extends View {
 
         AnimatorSet topLeftToCenter = moveTopLeftToCenter();
         AnimatorSet botLeftToCenter = moveBotLeftToCenter();
-        botLeftToCenter.setStartDelay(200);
+        botLeftToCenter.setStartDelay(duration / 4 / 6);
         AnimatorSet botRightToCenter = moveBotRightToCenter();
-        botRightToCenter.setStartDelay(400);
+        botRightToCenter.setStartDelay(duration / 4 / 4);
         AnimatorSet topRightToCenter = moveTopRightToCenter();
-        topRightToCenter.setStartDelay(600);
+        topRightToCenter.setStartDelay(duration / 4 / 2);
 
         AnimatorSet moveToCenterAnimator = new AnimatorSet();
         moveToCenterAnimator.playTogether(topLeftToCenter, botLeftToCenter, botRightToCenter, topRightToCenter);
 
         AnimatorSet topLeftFromCenter = moveTopLeftFromCenter();
         AnimatorSet botLeftFromCenter = moveBotLeftFromCenter();
-        botLeftFromCenter.setStartDelay(200);
+        botLeftFromCenter.setStartDelay(duration / 4 / 6);
         AnimatorSet botRightFromCenter = moveBotRightFromCenter();
-        botRightFromCenter.setStartDelay(400);
+        botRightFromCenter.setStartDelay(duration / 4 / 4);
         AnimatorSet topRightFromCenter = moveTopRightFromCenter();
-        topRightFromCenter.setStartDelay(600);
+        topRightFromCenter.setStartDelay(duration / 4 / 2);
 
         AnimatorSet moveFromCenterAnimator = new AnimatorSet();
         moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
@@ -142,7 +153,7 @@ public class CustomView extends View {
 
     private ValueAnimator moveDown(final int i){
         ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
-        moveDownAnimator.setDuration(500);
+        moveDownAnimator.setDuration(duration / 4 / 2);
         moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -162,7 +173,7 @@ public class CustomView extends View {
 
     private ValueAnimator moveUp(final int i){
         ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
-        moveUpAnimator.setDuration(500);
+        moveUpAnimator.setDuration(duration / 4 / 2);
         moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -182,7 +193,7 @@ public class CustomView extends View {
 
     private ValueAnimator moveRight(final int i){
         ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
-        moveRightAnimator.setDuration(500);
+        moveRightAnimator.setDuration(duration / 4 / 2);
         moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -202,7 +213,7 @@ public class CustomView extends View {
 
     private ValueAnimator moveLeft(final int i){
         ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
-        moveLeftAnimator.setDuration(500);
+        moveLeftAnimator.setDuration(duration / 4 / 2);
         moveLeftAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -222,10 +233,9 @@ public class CustomView extends View {
     }
 
     private AnimatorSet moveTopLeftToCenter(){
-        System.out.println("x: " + points.get(0).getPosX() + " y: " + points.get(0). getPosY());
         ValueAnimator moveDownAnimator = moveDown(0);
         ValueAnimator moveRightAnimator = moveRight(0);
-        moveRightAnimator.setStartDelay(50);
+        moveRightAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveRightAnimator);
@@ -235,7 +245,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotLeftToCenter(){
         ValueAnimator moveRightAnimator = moveRight(2);
         ValueAnimator moveUpAnimator = moveUp(2);
-        moveUpAnimator.setStartDelay(50);
+        moveUpAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRightAnimator, moveUpAnimator);
@@ -245,7 +255,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotRightToCenter(){
         ValueAnimator moveUpAnimator = moveUp(3);
         ValueAnimator moveLeftAnimator = moveLeft(3);
-        moveLeftAnimator.setStartDelay(50);
+        moveLeftAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveLeftAnimator);
@@ -255,7 +265,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopRightToCenter(){
         ValueAnimator moveLeft = moveLeft(1);
         ValueAnimator moveDown = moveDown(1);
-        moveDown.setStartDelay(50);
+        moveDown.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeft, moveDown);
@@ -265,7 +275,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopLeftFromCenter(){
         ValueAnimator moveUpAnimator = moveUp(0);
         ValueAnimator moveLeftAnimator = moveLeft(0);
-        moveUpAnimator.setStartDelay(50);
+        moveUpAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeftAnimator, moveUpAnimator);
@@ -275,7 +285,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotLeftFromCenter(){
         ValueAnimator moveDownAnimator = moveDown(2);
         ValueAnimator moveLeftAnimator = moveLeft(2);
-        moveLeftAnimator.setStartDelay(50);
+        moveLeftAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveLeftAnimator);
@@ -285,7 +295,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotRightFromCenter(){
         ValueAnimator moveRight = moveRight(3);
         ValueAnimator moveDown = moveDown(3);
-        moveDown.setStartDelay(50);
+        moveDown.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRight, moveDown);
@@ -295,7 +305,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopRightFromCenter(){
         ValueAnimator moveRightAnimator = moveRight(1);
         ValueAnimator moveUpAnimator = moveUp(1);
-        moveRightAnimator.setStartDelay(50);
+        moveRightAnimator.setStartDelay(duration / 4 / 20);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveRightAnimator);
@@ -333,8 +343,8 @@ public class CustomView extends View {
         height = h;
         width = w;
 
-        int littleRadius = Math.min(height, width) / 20;
-        int bigRadius = Math.min(height, width) / 6;
+        int littleRadius = Math.min(height, width) / 16 ;
+        int bigRadius = Math.min(height, width) / 4;
 
         int diff = Math.abs(height - width) / 2;
 
