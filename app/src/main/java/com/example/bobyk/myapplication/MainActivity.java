@@ -1,9 +1,9 @@
 package com.example.bobyk.myapplication;
 
-import android.database.Observable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.example.bobyk.myapplication.views.CustomProgressBar;
 
@@ -12,9 +12,32 @@ import com.example.bobyk.myapplication.views.CustomProgressBar;
  */
 public class MainActivity extends AppCompatActivity {
 
+    private CustomProgressBar progressCircleBar;
+    private CustomProgressBar progressTomatoBar;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        init();
+    }
+
+    private void init(){
+        progressCircleBar = (CustomProgressBar) findViewById(R.id.circle);
+        progressCircleBar.setOnCustomBarClickListener(new CustomProgressBar.OnCustomBarClickListener() {
+            @Override
+            public void onClick() {
+                Toast.makeText(MainActivity.this, "Click on circle bar", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        progressTomatoBar = (CustomProgressBar) findViewById(R.id.tomato);
+        progressTomatoBar.setOnCustomBarClickListener(new CustomProgressBar.OnCustomBarClickListener() {
+            @Override
+            public void onClick() {
+                Toast.makeText(MainActivity.this, "Duration for tomato bar " + progressTomatoBar.getDuration() + "ms", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
