@@ -354,20 +354,53 @@ public class CustomProgressBar extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        final int height = getMeasuredHeight();
-        final int width = getMeasuredWidth();
+        int height = 0;
+        int width = 0;
 
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        Log.d("TAG", "onMeasure: widthMode: " + widthMode + " heightMode: " + heightMode);
+
+        switch (widthMode) {
+        case MeasureSpec.EXACTLY:
+            width = widthSize;
+            height = heightSize;
+            break;
+        case MeasureSpec.AT_MOST:
+            width = 50;
+            height = 50;
+            break;
+        }
+
+      /*  switch (heightMode) {
+        case MeasureSpec.EXACTLY:
+            height = heightSize;
+            break;
+        case MeasureSpec.AT_MOST:
+            height = 50;
+            break;
+        }*/
+
+        Log.d("TAG", "onMeasure: w: " + width + " h: " + height);
         int squareSize = Math.min(height, width);
         setMeasuredDimension(squareSize, squareSize);
 
-        setMinimumHeight(100);
-        setMinimumWidth(100);
+        /*setMinimumHeight(100);
+        setMinimumWidth(100);*/
+    }
+
+    @Override
+    public void setMinimumWidth(int minWidth) {
+        super.setMinimumWidth(minWidth);
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-       // Log.d("TAG", "onSizeChanged: w: " + w + " h: " + h + "old w : " + oldw + "old h : " + oldh);
+        Log.d("TAG", "onSizeChanged: w: " + w + " h: " + h + "old w : " + oldw + "old h : " + oldh);
         points = new ArrayList<>();
         height = h;
         width = w;
