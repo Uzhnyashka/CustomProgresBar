@@ -28,6 +28,24 @@ import java.util.ArrayList;
  */
 public class CustomProgressBar extends View {
 
+    final int topLeftNumber = 0;
+    final int topRightNumber = 1;
+    final int botLeftNumber = 2;
+    final int botRightNumber = 3;
+
+    final int countOfAnimationParts = 4;
+
+    final int countRepeatLargeIconAlpha = 5;
+    final int countRepeatSmallIconAlpha = 7;
+
+    final int durationPartMoveSmallIcon = 3;
+    final int durationPartBetweenMoves = 40;
+    final int durationPartForSecondMove = 9;
+    final int durationPartForThirdMove = 6;
+    final int durationPartForFourthMove = 3;
+
+    final int wrapContentSize = 50;
+
     private OnCustomBarClickListener onCustomBarClickListener;
     private OnCustomBarAnimationListener onCustomBarAnimationListener;
     int height = 0;
@@ -136,8 +154,8 @@ public class CustomProgressBar extends View {
 
         largeIconAlpha = ValueAnimator.ofInt(0, 255);
         largeIconAlpha.setRepeatMode(ValueAnimator.REVERSE);
-        largeIconAlpha.setRepeatCount(5);
-        largeIconAlpha.setDuration(duration / 4 / 5);
+        largeIconAlpha.setRepeatCount(countRepeatLargeIconAlpha);
+        largeIconAlpha.setDuration(duration / countOfAnimationParts / countRepeatLargeIconAlpha);
         largeIconAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -152,8 +170,8 @@ public class CustomProgressBar extends View {
 
         smallIconAlpha = ValueAnimator.ofInt(255, 0);
         smallIconAlpha.setRepeatMode(ValueAnimator.REVERSE);
-        smallIconAlpha.setRepeatCount(7);
-        smallIconAlpha.setDuration(duration / 4 / 7);
+        smallIconAlpha.setRepeatCount(countRepeatSmallIconAlpha);
+        smallIconAlpha.setDuration(duration / countOfAnimationParts / countRepeatSmallIconAlpha);
         smallIconAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -165,22 +183,22 @@ public class CustomProgressBar extends View {
 
         AnimatorSet topLeftToCenter = moveTopLeftToCenter();
         AnimatorSet botLeftToCenter = moveBotLeftToCenter();
-        botLeftToCenter.setStartDelay(duration / 4 / 9);
+        botLeftToCenter.setStartDelay(duration / countOfAnimationParts / durationPartForSecondMove);
         AnimatorSet botRightToCenter = moveBotRightToCenter();
-        botRightToCenter.setStartDelay(duration / 4 / 6);
+        botRightToCenter.setStartDelay(duration / countOfAnimationParts / durationPartForThirdMove);
         AnimatorSet topRightToCenter = moveTopRightToCenter();
-        topRightToCenter.setStartDelay(duration / 4 / 3);
+        topRightToCenter.setStartDelay(duration / countOfAnimationParts / durationPartForFourthMove);
 
         moveToCenterAnimator = new AnimatorSet();
         moveToCenterAnimator.playTogether(topLeftToCenter, botLeftToCenter, botRightToCenter, topRightToCenter);
 
         AnimatorSet topLeftFromCenter = moveTopLeftFromCenter();
         AnimatorSet botLeftFromCenter = moveBotLeftFromCenter();
-        botLeftFromCenter.setStartDelay(duration / 4 / 9);
+        botLeftFromCenter.setStartDelay(duration / countOfAnimationParts / durationPartForSecondMove);
         AnimatorSet botRightFromCenter = moveBotRightFromCenter();
-        botRightFromCenter.setStartDelay(duration / 4 / 6);
+        botRightFromCenter.setStartDelay(duration / countOfAnimationParts / durationPartForThirdMove);
         AnimatorSet topRightFromCenter = moveTopRightFromCenter();
-        topRightFromCenter.setStartDelay(duration / 4 / 3);
+        topRightFromCenter.setStartDelay(duration / countOfAnimationParts / durationPartForFourthMove);
 
         moveFromCenterAnimator = new AnimatorSet();
         moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
@@ -188,7 +206,7 @@ public class CustomProgressBar extends View {
 
     private ValueAnimator moveDown(final int i){
         ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallSize);
-        moveDownAnimator.setDuration(duration / 4 / 3);
+        moveDownAnimator.setDuration(duration / countOfAnimationParts / durationPartMoveSmallIcon);
         moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -208,7 +226,7 @@ public class CustomProgressBar extends View {
     private ValueAnimator moveUp(final int i){
 
         ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallSize);
-        moveUpAnimator.setDuration(duration / 4 / 3);
+        moveUpAnimator.setDuration(duration / countOfAnimationParts / durationPartMoveSmallIcon);
         moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -227,7 +245,7 @@ public class CustomProgressBar extends View {
 
     private ValueAnimator moveRight(final int i){
         ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallSize);
-        moveRightAnimator.setDuration(duration / 4 / 3);
+        moveRightAnimator.setDuration(duration / countOfAnimationParts / durationPartMoveSmallIcon);
         moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -246,7 +264,7 @@ public class CustomProgressBar extends View {
 
     private ValueAnimator moveLeft(final int i){
         ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallSize);
-        moveLeftAnimator.setDuration(duration / 4 / 3);
+        moveLeftAnimator.setDuration(duration / countOfAnimationParts / durationPartMoveSmallIcon);
         moveLeftAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -265,9 +283,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveTopLeftToCenter(){
-        ValueAnimator moveDownAnimator = moveDown(0);
-        ValueAnimator moveRightAnimator = moveRight(0);
-        moveRightAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveDownAnimator = moveDown(topLeftNumber);
+        ValueAnimator moveRightAnimator = moveRight(topLeftNumber);
+        moveRightAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveRightAnimator);
@@ -275,9 +293,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveBotLeftToCenter(){
-        ValueAnimator moveRightAnimator = moveRight(2);
-        ValueAnimator moveUpAnimator = moveUp(2);
-        moveUpAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveRightAnimator = moveRight(botLeftNumber);
+        ValueAnimator moveUpAnimator = moveUp(botLeftNumber);
+        moveUpAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRightAnimator, moveUpAnimator);
@@ -285,9 +303,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveBotRightToCenter(){
-        ValueAnimator moveUpAnimator = moveUp(3);
-        ValueAnimator moveLeftAnimator = moveLeft(3);
-        moveLeftAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveUpAnimator = moveUp(botRightNumber);
+        ValueAnimator moveLeftAnimator = moveLeft(botRightNumber);
+        moveLeftAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveLeftAnimator);
@@ -295,9 +313,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveTopRightToCenter(){
-        ValueAnimator moveLeftAnimator = moveLeft(1);
-        ValueAnimator moveDownAnimator = moveDown(1);
-        moveDownAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveLeftAnimator = moveLeft(topRightNumber);
+        ValueAnimator moveDownAnimator = moveDown(topRightNumber);
+        moveDownAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeftAnimator, moveDownAnimator);
@@ -305,9 +323,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveTopLeftFromCenter(){
-        ValueAnimator moveUpAnimator = moveUp(0);
-        ValueAnimator moveLeftAnimator = moveLeft(0);
-        moveUpAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveUpAnimator = moveUp(topLeftNumber);
+        ValueAnimator moveLeftAnimator = moveLeft(topLeftNumber);
+        moveUpAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeftAnimator, moveUpAnimator);
@@ -315,9 +333,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveBotLeftFromCenter(){
-        ValueAnimator moveDownAnimator = moveDown(2);
-        ValueAnimator moveLeftAnimator = moveLeft(2);
-        moveLeftAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveDownAnimator = moveDown(botLeftNumber);
+        ValueAnimator moveLeftAnimator = moveLeft(botLeftNumber);
+        moveLeftAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveLeftAnimator);
@@ -325,9 +343,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveBotRightFromCenter(){
-        ValueAnimator moveRightAnimator = moveRight(3);
-        ValueAnimator moveDownAnimator = moveDown(3);
-        moveDownAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveRightAnimator = moveRight(botRightNumber);
+        ValueAnimator moveDownAnimator = moveDown(botRightNumber);
+        moveDownAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRightAnimator, moveDownAnimator);
@@ -335,9 +353,9 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveTopRightFromCenter(){
-        ValueAnimator moveRightAnimator = moveRight(1);
-        ValueAnimator moveUpAnimator = moveUp(1);
-        moveRightAnimator.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveRightAnimator = moveRight(topRightNumber);
+        ValueAnimator moveUpAnimator = moveUp(topRightNumber);
+        moveRightAnimator.setStartDelay(duration / countOfAnimationParts / durationPartBetweenMoves);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveRightAnimator);
@@ -382,8 +400,8 @@ public class CustomProgressBar extends View {
             height = heightSize;
             break;
         case MeasureSpec.AT_MOST:
-            width = 50;
-            height = 50;
+            width = wrapContentSize;
+            height = wrapContentSize;
             break;
         }
 
@@ -393,14 +411,8 @@ public class CustomProgressBar extends View {
     }
 
     @Override
-    public void setMinimumWidth(int minWidth) {
-        super.setMinimumWidth(minWidth);
-    }
-
-    @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.d("TAG", "onSizeChanged: w: " + w + " h: " + h + "old w : " + oldw + "old h : " + oldh);
         points = new ArrayList<>();
         height = h;
         width = w;
@@ -412,11 +424,6 @@ public class CustomProgressBar extends View {
         points.add(new Point(width - smallSize, smallSize, width - smallSize, smallSize));
         points.add(new Point(smallSize, height - smallSize, smallSize, height - smallSize));
         points.add(new Point(width - smallSize, height - smallSize, width - smallSize, height - smallSize));
-
-
-        /*smallBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, smallSize * 2, smallSize * 2
-                , false);
-        largeBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, largeSize * 2, largeSize * 2, false);*/
 
         initAnimation();
         mainAnimator = new AnimatorSet();
