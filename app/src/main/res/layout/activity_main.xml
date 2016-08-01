@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
 
-    <com.example.bobyk.myapplication.views.CustomView
+    <com.example.bobyk.myapplication.views.CustomProgressBar
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_centerHorizontal="true"
@@ -14,7 +14,7 @@
         app:barDuration="10000"
         app:barColor="@color/colorAccent"
         app:barIcon="@drawable/tomato"/>
-    <com.example.bobyk.myapplication.views.CustomView
+    <com.example.bobyk.myapplication.views.CustomProgressBar
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_centerHorizontal="true"
@@ -22,7 +22,7 @@
         android:layout_below="@+id/tomato"
         app:barIcon="@drawable/circle"
         app:barColor="@color/blackColor" />
-    <com.example.bobyk.myapplication.views.CustomView
+    <com.example.bobyk.myapplication.views.CustomProgressBar
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_centerHorizontal="true"

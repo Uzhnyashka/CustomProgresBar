@@ -3,15 +3,12 @@ package com.example.bobyk.myapplication.views;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -20,7 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.bobyk.myapplication.Point;
+import com.example.bobyk.myapplication.models.Point;
 import com.example.bobyk.myapplication.R;
 
 import java.util.ArrayList;
@@ -28,8 +25,10 @@ import java.util.ArrayList;
 /**
  * Created by bobyk on 29.07.16.
  */
-public class CustomView extends View {
+public class CustomProgressBar extends View {
 
+    private OnCustomBarClickListener onCustomBarClickListener;
+    private OnCustomBarAnimationListener onCustomBarAnimationListener;
     private int color;
     int height = 0;
     int width = 0;
@@ -39,34 +38,33 @@ public class CustomView extends View {
     private ValueAnimator bigAlphaAnimator;
     private ValueAnimator littleAlphaAnimator;
     private long duration;
-    private long timeDuration;
     private Bitmap bitmapIcon;
     private ArrayList<Point> points;
     private Bitmap littleBitmapIcon;
     private Bitmap bigBitmapIcon;
 
-    public CustomView(Context context){
+    public CustomProgressBar(Context context){
         super(context);
         init(context, null);
     }
 
-    public CustomView(Context context, AttributeSet attrs) {
+    public CustomProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public CustomView(Context context, AttributeSet attrs, int defType){
+    public CustomProgressBar(Context context, AttributeSet attrs, int defType){
         super(context, attrs, defType);
         init(context, attrs);
     }
 
     private void init(Context context, AttributeSet attrs){
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomView);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomProgressBar);
 
         try {
-            color = a.getColor(R.styleable.CustomView_barColor, 0xff000000);
-            duration = a.getInt(R.styleable.CustomView_barDuration, 5000);
-            Drawable icon = a.getDrawable(R.styleable.CustomView_barIcon);
+            color = a.getColor(R.styleable.CustomProgressBar_barColor, 0xff000000);
+            duration = a.getInt(R.styleable.CustomProgressBar_barDuration, 5000);
+            Drawable icon = a.getDrawable(R.styleable.CustomProgressBar_barIcon);
             BitmapDrawable bitmapDrawable = (BitmapDrawable) icon;
             if (bitmapDrawable != null) {
                 bitmapIcon = bitmapDrawable.getBitmap();
@@ -82,10 +80,13 @@ public class CustomView extends View {
         paintLine.setColor(color);
         paintLine.setStrokeWidth(2);
 
-        CustomView.this.setOnTouchListener(new OnTouchListener() {
+        CustomProgressBar.this.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 Toast.makeText(getContext(), "Current duration " + duration + "ms", Toast.LENGTH_SHORT).show();
+                if (onCustomBarClickListener != null){
+                    onCustomBarClickListener.onClick();
+                }
                 return false;
             }
         });
@@ -100,7 +101,7 @@ public class CustomView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 bigPaint.setAlpha((int) valueAnimator.getAnimatedValue());
-                CustomView.this.invalidate();
+                CustomProgressBar.this.invalidate();
             }
         });
 
@@ -112,29 +113,29 @@ public class CustomView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 littlePaint.setAlpha((int) valueAnimator.getAnimatedValue());
-                CustomView.this.invalidate();
+                CustomProgressBar.this.invalidate();
             }
         });
 
 
         AnimatorSet topLeftToCenter = moveTopLeftToCenter();
         AnimatorSet botLeftToCenter = moveBotLeftToCenter();
-        botLeftToCenter.setStartDelay(duration / 4 / 6);
+        botLeftToCenter.setStartDelay(duration / 4 / 9);
         AnimatorSet botRightToCenter = moveBotRightToCenter();
-        botRightToCenter.setStartDelay(duration / 4 / 4);
+        botRightToCenter.setStartDelay(duration / 4 / 6);
         AnimatorSet topRightToCenter = moveTopRightToCenter();
-        topRightToCenter.setStartDelay(duration / 4 / 2);
+        topRightToCenter.setStartDelay(duration / 4 / 3);
 
         AnimatorSet moveToCenterAnimator = new AnimatorSet();
         moveToCenterAnimator.playTogether(topLeftToCenter, botLeftToCenter, botRightToCenter, topRightToCenter);
 
         AnimatorSet topLeftFromCenter = moveTopLeftFromCenter();
         AnimatorSet botLeftFromCenter = moveBotLeftFromCenter();
-        botLeftFromCenter.setStartDelay(duration / 4 / 6);
+        botLeftFromCenter.setStartDelay(duration / 4 / 9);
         AnimatorSet botRightFromCenter = moveBotRightFromCenter();
-        botRightFromCenter.setStartDelay(duration / 4 / 4);
+        botRightFromCenter.setStartDelay(duration / 4 / 6);
         AnimatorSet topRightFromCenter = moveTopRightFromCenter();
-        topRightFromCenter.setStartDelay(duration / 4 / 2);
+        topRightFromCenter.setStartDelay(duration / 4 / 3);
 
         AnimatorSet moveFromCenterAnimator = new AnimatorSet();
         moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
@@ -145,6 +146,9 @@ public class CustomView extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                if (onCustomBarAnimationListener != null){
+                    onCustomBarAnimationListener.onAnimationEnd();
+                }
                 mainAnimator.start();
             }
         });
@@ -153,19 +157,19 @@ public class CustomView extends View {
 
     private ValueAnimator moveDown(final int i){
         ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
-        moveDownAnimator.setDuration(duration / 4 / 2);
+        moveDownAnimator.setDuration(duration / 4 / 3);
         moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int y = CustomView.this.points.get(i).getStartPosY();
-                CustomView.this.points.get(i).setPosY(y + (int)valueAnimator.getAnimatedValue());
-                CustomView.this.invalidate();
+                int y = CustomProgressBar.this.points.get(i).getStartPosY();
+                CustomProgressBar.this.points.get(i).setPosY(y + (int)valueAnimator.getAnimatedValue());
+                CustomProgressBar.this.invalidate();
             }
         });
         moveDownAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                CustomView.this.points.get(i).setStartPosY(CustomView.this.points.get(i).getStartPosY() + (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
+                CustomProgressBar.this.points.get(i).setStartPosY(CustomProgressBar.this.points.get(i).getStartPosY() + (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
             }
         });
         return moveDownAnimator;
@@ -173,19 +177,19 @@ public class CustomView extends View {
 
     private ValueAnimator moveUp(final int i){
         ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
-        moveUpAnimator.setDuration(duration / 4 / 2);
+        moveUpAnimator.setDuration(duration / 4 / 3);
         moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int y = CustomView.this.points.get(i).getStartPosY();
-                CustomView.this.points.get(i).setPosY(y - (int)valueAnimator.getAnimatedValue());
-                CustomView.this.invalidate();
+                int y = CustomProgressBar.this.points.get(i).getStartPosY();
+                CustomProgressBar.this.points.get(i).setPosY(y - (int)valueAnimator.getAnimatedValue());
+                CustomProgressBar.this.invalidate();
             }
         });
         moveUpAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                CustomView.this.points.get(i).setStartPosY(CustomView.this.points.get(i).getStartPosY() - (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
+                CustomProgressBar.this.points.get(i).setStartPosY(CustomProgressBar.this.points.get(i).getStartPosY() - (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
             }
         });
         return moveUpAnimator;
@@ -193,19 +197,19 @@ public class CustomView extends View {
 
     private ValueAnimator moveRight(final int i){
         ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
-        moveRightAnimator.setDuration(duration / 4 / 2);
+        moveRightAnimator.setDuration(duration / 4 / 3);
         moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int x = CustomView.this.points.get(i).getStartPosX();
-                CustomView.this.points.get(i).setPosX((x + (int)valueAnimator.getAnimatedValue()));
-                CustomView.this.invalidate();
+                int x = CustomProgressBar.this.points.get(i).getStartPosX();
+                CustomProgressBar.this.points.get(i).setPosX((x + (int)valueAnimator.getAnimatedValue()));
+                CustomProgressBar.this.invalidate();
             }
         });
         moveRightAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                CustomView.this.points.get(i).setStartPosX(CustomView.this.points.get(i).getStartPosX() + (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
+                CustomProgressBar.this.points.get(i).setStartPosX(CustomProgressBar.this.points.get(i).getStartPosX() + (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
             }
         });
         return moveRightAnimator;
@@ -213,20 +217,20 @@ public class CustomView extends View {
 
     private ValueAnimator moveLeft(final int i){
         ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
-        moveLeftAnimator.setDuration(duration / 4 / 2);
+        moveLeftAnimator.setDuration(duration / 4 / 3);
         moveLeftAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int x = CustomView.this.points.get(i).getStartPosX();
-                CustomView.this.points.get(i).setPosX((x - (int)valueAnimator.getAnimatedValue()));
-                CustomView.this.invalidate();
+                int x = CustomProgressBar.this.points.get(i).getStartPosX();
+                CustomProgressBar.this.points.get(i).setPosX((x - (int)valueAnimator.getAnimatedValue()));
+                CustomProgressBar.this.invalidate();
             }
         });
 
         moveLeftAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                CustomView.this.points.get(i).setStartPosX(CustomView.this.points.get(i).getStartPosX() - (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
+                CustomProgressBar.this.points.get(i).setStartPosX(CustomProgressBar.this.points.get(i).getStartPosX() - (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
             }
         });
         return moveLeftAnimator;
@@ -235,7 +239,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopLeftToCenter(){
         ValueAnimator moveDownAnimator = moveDown(0);
         ValueAnimator moveRightAnimator = moveRight(0);
-        moveRightAnimator.setStartDelay(duration / 4 / 20);
+        moveRightAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveRightAnimator);
@@ -245,7 +249,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotLeftToCenter(){
         ValueAnimator moveRightAnimator = moveRight(2);
         ValueAnimator moveUpAnimator = moveUp(2);
-        moveUpAnimator.setStartDelay(duration / 4 / 20);
+        moveUpAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRightAnimator, moveUpAnimator);
@@ -255,7 +259,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotRightToCenter(){
         ValueAnimator moveUpAnimator = moveUp(3);
         ValueAnimator moveLeftAnimator = moveLeft(3);
-        moveLeftAnimator.setStartDelay(duration / 4 / 20);
+        moveLeftAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveLeftAnimator);
@@ -265,7 +269,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopRightToCenter(){
         ValueAnimator moveLeft = moveLeft(1);
         ValueAnimator moveDown = moveDown(1);
-        moveDown.setStartDelay(duration / 4 / 20);
+        moveDown.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeft, moveDown);
@@ -275,7 +279,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopLeftFromCenter(){
         ValueAnimator moveUpAnimator = moveUp(0);
         ValueAnimator moveLeftAnimator = moveLeft(0);
-        moveUpAnimator.setStartDelay(duration / 4 / 20);
+        moveUpAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveLeftAnimator, moveUpAnimator);
@@ -285,7 +289,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotLeftFromCenter(){
         ValueAnimator moveDownAnimator = moveDown(2);
         ValueAnimator moveLeftAnimator = moveLeft(2);
-        moveLeftAnimator.setStartDelay(duration / 4 / 20);
+        moveLeftAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveDownAnimator, moveLeftAnimator);
@@ -295,7 +299,7 @@ public class CustomView extends View {
     private AnimatorSet moveBotRightFromCenter(){
         ValueAnimator moveRight = moveRight(3);
         ValueAnimator moveDown = moveDown(3);
-        moveDown.setStartDelay(duration / 4 / 20);
+        moveDown.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveRight, moveDown);
@@ -305,7 +309,7 @@ public class CustomView extends View {
     private AnimatorSet moveTopRightFromCenter(){
         ValueAnimator moveRightAnimator = moveRight(1);
         ValueAnimator moveUpAnimator = moveUp(1);
-        moveRightAnimator.setStartDelay(duration / 4 / 20);
+        moveRightAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.playSequentially(moveUpAnimator, moveRightAnimator);
@@ -343,7 +347,7 @@ public class CustomView extends View {
         height = h;
         width = w;
 
-        int littleRadius = Math.min(height, width) / 16 ;
+        int littleRadius = Math.min(height, width) / 16;
         int bigRadius = Math.min(height, width) / 4;
 
         int diff = Math.abs(height - width) / 2;
@@ -366,5 +370,29 @@ public class CustomView extends View {
         bigBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, bigRadius * 2, bigRadius * 2, false);
 
         initAnimation();
+    }
+
+    public interface OnCustomBarClickListener{
+        void onClick();
+    }
+
+    public OnCustomBarClickListener getOnCustomBarClickListener() {
+        return onCustomBarClickListener;
+    }
+
+    public void setOnCustomBarClickListener(OnCustomBarClickListener onCustomBarClickListener) {
+        this.onCustomBarClickListener = onCustomBarClickListener;
+    }
+
+    public interface OnCustomBarAnimationListener{
+        void onAnimationEnd();
+    }
+
+    public OnCustomBarAnimationListener getOnCustomBarAnimationListener() {
+        return onCustomBarAnimationListener;
+    }
+
+    public void setOnCustomBarAnimationListener(OnCustomBarAnimationListener onCustomBarAnimationListener) {
+        this.onCustomBarAnimationListener = onCustomBarAnimationListener;
     }
 }

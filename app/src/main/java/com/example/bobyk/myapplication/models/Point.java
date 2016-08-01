@@ -1,4 +1,4 @@
-package com.example.bobyk.myapplication;
+package com.example.bobyk.myapplication.models;
 
 /**
  * Created by bobyk on 30/07/16.
