@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.example.bobyk.myapplication.R;
 
 import java.util.ArrayList;
+import android.os.Handler;
 
 /**
  * Created by bobyk on 29.07.16.
@@ -46,6 +47,8 @@ public class CustomProgressBar extends View {
 
     final int wrapContentSize = 50;
 
+    private Runnable invalidateRunnable;
+    private Handler handler = new Handler();
     private OnCustomBarClickListener onCustomBarClickListener;
     private OnCustomBarAnimationListener onCustomBarAnimationListener;
     int height = 0;
@@ -83,7 +86,6 @@ public class CustomProgressBar extends View {
 
     public void setDuration(long duration) {
         this.duration = duration;
-        invalidate();
     }
 
     public long getDuration() {
@@ -160,7 +162,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 largePaint.setAlpha((int) valueAnimator.getAnimatedValue());
-                CustomProgressBar.this.invalidate();
             }
         });
 
@@ -176,7 +177,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 smallPaint.setAlpha((int) valueAnimator.getAnimatedValue());
-                CustomProgressBar.this.invalidate();
             }
         });
 
@@ -202,6 +202,14 @@ public class CustomProgressBar extends View {
 
         moveFromCenterAnimator = new AnimatorSet();
         moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
+
+        invalidateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+                handler.postDelayed(this, 20);
+            }
+        };
     }
 
     private ValueAnimator moveDown(final int i){
@@ -211,7 +219,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 points.get(i).setPosY(points.get(i).getStartPosY() + (int)valueAnimator.getAnimatedValue());
-               invalidate();
             }
         });
         moveDownAnimator.addListener(new AnimatorListenerAdapter() {
@@ -231,7 +238,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 points.get(i).setPosY(points.get(i).getStartPosY() - (int)valueAnimator.getAnimatedValue());
-                invalidate();
             }
         });
         moveUpAnimator.addListener(new AnimatorListenerAdapter() {
@@ -250,7 +256,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 points.get(i).setPosX((points.get(i).getStartPosX() + (int)valueAnimator.getAnimatedValue()));
-                invalidate();
             }
         });
         moveRightAnimator.addListener(new AnimatorListenerAdapter() {
@@ -269,7 +274,6 @@ public class CustomProgressBar extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 points.get(i).setPosX((points.get(i).getStartPosX() - (int)valueAnimator.getAnimatedValue()));
-                CustomProgressBar.this.invalidate();
             }
         });
 
@@ -439,6 +443,7 @@ public class CustomProgressBar extends View {
             }
         });
         mainAnimator.start();
+        invalidateRunnable.run();
     }
 
     private Bitmap getBitmapIconForSize(int size){
