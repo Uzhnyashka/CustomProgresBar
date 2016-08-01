@@ -1,5 +1,7 @@
 package com.example.bobyk.myapplication;
 
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +38,14 @@ public class MainActivity extends AppCompatActivity {
         progressTomatoBar.setOnCustomBarClickListener(new CustomProgressBar.OnCustomBarClickListener() {
             @Override
             public void onClick() {
-                Toast.makeText(MainActivity.this, "Duration for tomato bar " + progressTomatoBar.getDuration() + "ms", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(MainActivity.this, "Duration for tomato bar " + progressTomatoBar.getDuration() + "ms", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        progressTomatoBar.setOnCustomBarAnimationListener(new CustomProgressBar.OnCustomBarAnimationListener() {
+            @Override
+            public void onAnimationEnd() {
+                Toast.makeText(MainActivity.this, "Animated End", Toast.LENGTH_SHORT).show();
             }
         });
     }

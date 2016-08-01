@@ -29,19 +29,22 @@ public class CustomProgressBar extends View {
 
     private OnCustomBarClickListener onCustomBarClickListener;
     private OnCustomBarAnimationListener onCustomBarAnimationListener;
-    private int color;
     int height = 0;
     int width = 0;
-    private Paint bigPaint = new Paint();
+    private Paint largePaint = new Paint();
     private Paint paintLine = new Paint();
-    private Paint littlePaint = new Paint();
-    private ValueAnimator bigAlphaAnimator;
-    private ValueAnimator littleAlphaAnimator;
+    private Paint smallPaint = new Paint();
     private long duration;
     private Bitmap bitmapIcon;
     private ArrayList<Point> points;
-    private Bitmap littleBitmapIcon;
-    private Bitmap bigBitmapIcon;
+    private Bitmap smallBitmapIcon;
+    private Bitmap largeBitmapIcon;
+    ValueAnimator largeIconAlpha;
+    ValueAnimator smallIconAlpha;
+    AnimatorSet moveToCenterAnimator;
+    AnimatorSet moveFromCenterAnimator;
+
+    AnimatorSet mainAnimator;
 
     public CustomProgressBar(Context context){
         super(context);
@@ -60,6 +63,7 @@ public class CustomProgressBar extends View {
 
     public void setDuration(long duration) {
         this.duration = duration;
+        invalidate();
     }
 
     public long getDuration() {
@@ -67,16 +71,25 @@ public class CustomProgressBar extends View {
     }
 
     public void setBigBitmapIcon(Bitmap bigBitmapIcon) {
-        this.bigBitmapIcon = bigBitmapIcon;
+        this.largeBitmapIcon = bigBitmapIcon;
     }
 
     public Bitmap getBitmapIcon() {
         return bitmapIcon;
     }
 
+    public AnimatorSet getMainAnimator() {
+        return CustomProgressBar.this.mainAnimator;
+    }
+
+    public void setMainAnimator(AnimatorSet mainAnimator) {
+        this.mainAnimator = mainAnimator;
+    }
+
     private void init(Context context, AttributeSet attrs){
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomProgressBar);
 
+        int color;
         try {
             color = a.getColor(R.styleable.CustomProgressBar_barColor, 0xff000000);
             duration = a.getInt(R.styleable.CustomProgressBar_barDuration, 5000);
@@ -91,8 +104,8 @@ public class CustomProgressBar extends View {
         }finally {
             a.recycle();
         }
-        bigPaint.setAlpha(0);
-        littlePaint.setAlpha(255);
+        largePaint.setAlpha(0);
+        smallPaint.setAlpha(255);
         paintLine.setColor(color);
         paintLine.setStrokeWidth(2);
 
@@ -108,26 +121,28 @@ public class CustomProgressBar extends View {
     }
 
     private void initAnimation(){
-        bigAlphaAnimator = ValueAnimator.ofInt(0, 255);
-        bigAlphaAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        bigAlphaAnimator.setRepeatCount(5);
-        bigAlphaAnimator.setDuration(duration / 4 / 5);
-        bigAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        largeIconAlpha = ValueAnimator.ofInt(0, 255);
+        largeIconAlpha.setRepeatMode(ValueAnimator.REVERSE);
+        largeIconAlpha.setRepeatCount(5);
+        largeIconAlpha.setDuration(duration / 4 / 5);
+        largeIconAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                bigPaint.setAlpha((int) valueAnimator.getAnimatedValue());
+                largePaint.setAlpha((int) valueAnimator.getAnimatedValue());
                 CustomProgressBar.this.invalidate();
             }
         });
 
-        littleAlphaAnimator = ValueAnimator.ofInt(255, 0);
-        littleAlphaAnimator.setRepeatMode(ValueAnimator.REVERSE);
-        littleAlphaAnimator.setRepeatCount(7);
-        littleAlphaAnimator.setDuration(duration / 4 / 7);
-        littleAlphaAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        System.out.println(largeIconAlpha.getDuration());
+
+        smallIconAlpha = ValueAnimator.ofInt(255, 0);
+        smallIconAlpha.setRepeatMode(ValueAnimator.REVERSE);
+        smallIconAlpha.setRepeatCount(7);
+        smallIconAlpha.setDuration(duration / 4 / 7);
+        smallIconAlpha.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                littlePaint.setAlpha((int) valueAnimator.getAnimatedValue());
+                smallPaint.setAlpha((int) valueAnimator.getAnimatedValue());
                 CustomProgressBar.this.invalidate();
             }
         });
@@ -141,7 +156,7 @@ public class CustomProgressBar extends View {
         AnimatorSet topRightToCenter = moveTopRightToCenter();
         topRightToCenter.setStartDelay(duration / 4 / 3);
 
-        AnimatorSet moveToCenterAnimator = new AnimatorSet();
+        moveToCenterAnimator = new AnimatorSet();
         moveToCenterAnimator.playTogether(topLeftToCenter, botLeftToCenter, botRightToCenter, topRightToCenter);
 
         AnimatorSet topLeftFromCenter = moveTopLeftFromCenter();
@@ -152,92 +167,74 @@ public class CustomProgressBar extends View {
         AnimatorSet topRightFromCenter = moveTopRightFromCenter();
         topRightFromCenter.setStartDelay(duration / 4 / 3);
 
-        AnimatorSet moveFromCenterAnimator = new AnimatorSet();
+        moveFromCenterAnimator = new AnimatorSet();
         moveFromCenterAnimator.playTogether(topLeftFromCenter, botLeftFromCenter, botRightFromCenter, topRightFromCenter);
-
-        final AnimatorSet mainAnimator = new AnimatorSet();
-        mainAnimator.playSequentially(bigAlphaAnimator, moveToCenterAnimator, littleAlphaAnimator, moveFromCenterAnimator);
-        mainAnimator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                if (onCustomBarAnimationListener != null){
-                    onCustomBarAnimationListener.onAnimationEnd();
-                }
-                mainAnimator.start();
-            }
-        });
-        mainAnimator.start();
     }
 
     private ValueAnimator moveDown(final int i){
-        ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
+        ValueAnimator moveDownAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallBitmapIcon.getHeight() / 2);
         moveDownAnimator.setDuration(duration / 4 / 3);
         moveDownAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int y = CustomProgressBar.this.points.get(i).getStartPosY();
-                points.get(i).setPosY(y + (int)valueAnimator.getAnimatedValue());
+                points.get(i).setPosY(points.get(i).getStartPosY() + (int)valueAnimator.getAnimatedValue());
                invalidate();
             }
         });
         moveDownAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-               points.get(i).setStartPosY(points.get(i).getStartPosY() + (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
+               points.get(i).setStartPosY(points.get(i).getStartPosY() + (Math.min(height, width) / 2 - smallBitmapIcon.getHeight() / 2));
             }
         });
         return moveDownAnimator;
     }
 
     private ValueAnimator moveUp(final int i){
-        ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2);
+        ValueAnimator moveUpAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallBitmapIcon.getHeight() / 2);
         moveUpAnimator.setDuration(duration / 4 / 3);
         moveUpAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int y = points.get(i).getStartPosY();
-                points.get(i).setPosY(y - (int)valueAnimator.getAnimatedValue());
+                points.get(i).setPosY(points.get(i).getStartPosY() - (int)valueAnimator.getAnimatedValue());
                 invalidate();
             }
         });
         moveUpAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                points.get(i).setStartPosY(points.get(i).getStartPosY() - (Math.min(height, width) / 2 - littleBitmapIcon.getHeight() / 2));
+                points.get(i).setStartPosY(points.get(i).getStartPosY() - (Math.min(height, width) / 2 - smallBitmapIcon.getHeight() / 2));
             }
         });
         return moveUpAnimator;
     }
 
     private ValueAnimator moveRight(final int i){
-        ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
+        ValueAnimator moveRightAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallBitmapIcon.getWidth() / 2);
         moveRightAnimator.setDuration(duration / 4 / 3);
         moveRightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int x = points.get(i).getStartPosX();
-                points.get(i).setPosX((x + (int)valueAnimator.getAnimatedValue()));
+                points.get(i).setPosX((points.get(i).getStartPosX() + (int)valueAnimator.getAnimatedValue()));
                 invalidate();
             }
         });
         moveRightAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                points.get(i).setStartPosX(points.get(i).getStartPosX() + (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
+                points.get(i).setStartPosX(points.get(i).getStartPosX() + (Math.min(height, width) / 2 - smallBitmapIcon.getWidth() / 2));
             }
         });
         return moveRightAnimator;
     }
 
     private ValueAnimator moveLeft(final int i){
-        ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2);
+        ValueAnimator moveLeftAnimator = ValueAnimator.ofInt(0, Math.min(height, width) / 2 - smallBitmapIcon.getWidth() / 2);
         moveLeftAnimator.setDuration(duration / 4 / 3);
         moveLeftAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int x = points.get(i).getStartPosX();
-                points.get(i).setPosX((x - (int)valueAnimator.getAnimatedValue()));
+                points.get(i).setPosX((points.get(i).getStartPosX() - (int)valueAnimator.getAnimatedValue()));
                 CustomProgressBar.this.invalidate();
             }
         });
@@ -245,7 +242,7 @@ public class CustomProgressBar extends View {
         moveLeftAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                points.get(i).setStartPosX(points.get(i).getStartPosX() - (Math.min(height, width) / 2 - littleBitmapIcon.getWidth() / 2));
+                points.get(i).setStartPosX(points.get(i).getStartPosX() - (Math.min(height, width) / 2 - smallBitmapIcon.getWidth() / 2));
             }
         });
         return moveLeftAnimator;
@@ -282,12 +279,12 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveTopRightToCenter(){
-        ValueAnimator moveLeft = moveLeft(1);
-        ValueAnimator moveDown = moveDown(1);
-        moveDown.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveLeftAnimator = moveLeft(1);
+        ValueAnimator moveDownAnimator = moveDown(1);
+        moveDownAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playSequentially(moveLeft, moveDown);
+        animatorSet.playSequentially(moveLeftAnimator, moveDownAnimator);
         return animatorSet;
     }
 
@@ -312,12 +309,12 @@ public class CustomProgressBar extends View {
     }
 
     private AnimatorSet moveBotRightFromCenter(){
-        ValueAnimator moveRight = moveRight(3);
-        ValueAnimator moveDown = moveDown(3);
-        moveDown.setStartDelay(duration / 4 / 40);
+        ValueAnimator moveRightAnimator = moveRight(3);
+        ValueAnimator moveDownAnimator = moveDown(3);
+        moveDownAnimator.setStartDelay(duration / 4 / 40);
 
         AnimatorSet animatorSet = new AnimatorSet();
-        animatorSet.playSequentially(moveRight, moveDown);
+        animatorSet.playSequentially(moveRightAnimator, moveDownAnimator);
         return animatorSet;
     }
 
@@ -344,10 +341,10 @@ public class CustomProgressBar extends View {
         }
 
         for (Point point : points){
-            canvas.drawBitmap(littleBitmapIcon, point.getPosX() - littleBitmapIcon.getWidth() / 2, point.getPosY() - littleBitmapIcon.getHeight() / 2, littlePaint);
+            canvas.drawBitmap(smallBitmapIcon, point.getPosX() - smallBitmapIcon.getWidth() / 2, point.getPosY() - smallBitmapIcon.getHeight() / 2, smallPaint);
         }
 
-        canvas.drawBitmap(bigBitmapIcon, width / 2 - bigBitmapIcon.getWidth() / 2, height / 2 - bigBitmapIcon.getHeight() / 2, bigPaint);
+        canvas.drawBitmap(largeBitmapIcon, width / 2 - largeBitmapIcon.getWidth() / 2, height / 2 - largeBitmapIcon.getHeight() / 2, largePaint);
     }
 
     @Override
@@ -380,11 +377,24 @@ public class CustomProgressBar extends View {
             points.add(new Point(width - littleRadius - diff, height - littleRadius, width - littleRadius - diff, height - littleRadius));
         }
 
-        littleBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, littleRadius * 2, littleRadius * 2
+        smallBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, littleRadius * 2, littleRadius * 2
                 , false);
-        bigBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, bigRadius * 2, bigRadius * 2, false);
+        largeBitmapIcon = Bitmap.createScaledBitmap(bitmapIcon, bigRadius * 2, bigRadius * 2, false);
 
         initAnimation();
+        mainAnimator = new AnimatorSet();
+        mainAnimator.playSequentially(largeIconAlpha, moveToCenterAnimator, smallIconAlpha, moveFromCenterAnimator);
+        mainAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (onCustomBarAnimationListener != null){
+                    onCustomBarAnimationListener.onAnimationEnd();
+                }
+                mainAnimator.start();
+            }
+        });
+        mainAnimator.start();
     }
 
     public interface OnCustomBarClickListener{
